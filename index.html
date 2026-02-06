@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electric Adaptability</title>
+    
+    <link rel="icon" type="image/png" href="Favicon.png">
+    <link rel="apple-touch-icon" href="Favicon.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background-color: #D0D0C8;
+            color: #000000;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        ::selection {
+            background: #FFFFFF;
+            color: #000000;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .grain-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        main {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 3rem;
+        }
+
+        .content-wrapper {
+            max-width: 56rem;
+            width: 100%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+        }
+
+        .company-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .location {
+            text-align: right;
+            font-size: 0.6875rem;
+            font-weight: 300;
+            line-height: 1.6;
+            letter-spacing: 0.02em;
+        }
+
+        .section {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 3rem;
+            margin-bottom: 3.5rem;
+            align-items: start;
+        }
+
+        .section-label {
+            font-size: 0.6875rem;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(0, 0, 0, 0.5);
+            padding-top: 0.25rem;
+        }
+
+        .section-content {
+            font-size: 0.75rem;
+            line-height: 1.8;
+            font-weight: 400;
+        }
+
+        .section-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-content strong {
+            font-weight: 600;
+        }
+
+        .section-content a {
+            color: #000000;
+        }
+
+        .definition-box {
+            background: rgba(0, 0, 0, 0.04);
+            border-left: 2px solid rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-size: 0.875rem;
+            line-height: 1.7;
+        }
+
+        .contact-button {
+            display: inline-block;
+            background: #000000;
+            color: #D0D0C8;
+            padding: 0.875rem 2rem;
+            font-size: 0.8125rem;
+            font-weight: 400;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.01em;
+        }
+
+        .contact-button:hover {
+            background: #2a2a2a;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 4rem 1.5rem;
+            }
+
+            .section {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin-bottom: 3.5rem;
+            }
+
+            .header {
+                margin-bottom: 4rem;
+            }
+
+            .section-content {
+                font-size: 0.875rem;
+            }
+
+            .definition-box {
+                font-size: 0.8125rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div class="grain-overlay"></div>
+
+    <main>
+        <div class="content-wrapper">
+            <header class="header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 1.5rem;">
+                <h1 class="company-name">>_ELECTRIC ADAPTABILITY</h1>
+                <div class="location">
+                    <div><strong>NEW YORK, NY</strong></div>
+                    <div><strong>EST. 2026</strong></div>
+                </div>
+            </header>
+
+            <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
+                <div style="font-size: 0.6875rem; font-weight: 300; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(0, 0, 0, 0.5); margin-bottom: 0.75rem;">DEF.</div>
+                <div style="font-size: 0.6875rem; line-height: 1.8; font-weight: 400;">
+                    Electric Adaptability is the capacity of an electrically driven physical system to continuously adapt its behavior as its internal parameters drift over time, maintaining or improving operational efficiency, stability, and reliability.
+                    <br><br>
+                    This is achieved by deriving a system's characteristics—electrical, thermal, and mechanical—from a baseline physics-conforming framework, and empirically refining that framework through operation. From this, the system determines control actions that optimize selected multi-domain variables within defined safety and performance thresholds.
+                    <br><br>
+                    At the core of Electric Adaptability are operators: compound control-and-modeling constructs that jointly improve physical system performance while producing transferable, physics-grounded representations of system behavior.
+                </div>
+            </div>
+
+            <section class="section">
+                <div class="section-label">MISSION.</div>
+                <div class="section-content">
+                    <p>Build AI-driven operators that learn directly from physical systems and improve their operational efficiency as those systems age, drift, and encounter changing conditions.</p>
+                    
+                    <p>Today's control and optimization strategies are largely static: models are tuned at commissioning, while physical reality continuously evolves. This mismatch leads to silent efficiency loss, reduced lifespan, and conservative operating margins.</p>
+                    
+                    <p>Electric Adaptability addresses this by enabling operators to differentiate subtle degradation mechanisms (e.g., thermal drift vs. mechanical wear), discover multi-domain couplings inaccessible to analytical models alone, and identify operating regimes that balance efficiency, thermal stress, and reliability in real time.</p>
+                    
+                    <p>These operators are not replacements for classical control. They extend it—embedding learning mechanisms inside stable, physics-respecting control structures that can be deployed immediately on real systems.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-label">ARCHITECTURE.</div>
+                <div class="section-content">
+                    <p>Electric Adaptability is implemented through compound operators, each composed of three tightly coupled layers:</p>
+                    
+                    <p>1. Multi-Domain Perception</strong><br>
+                    Operators instrument physical systems across electrical, thermal, and mechanical domains. Sampling rates are domain-appropriate: high-bandwidth electrical sensing (up to ~10 kHz) where stability and dynamics demand it, lower-rate thermal and mechanical sensing aligned with physical time constants. This ensures the operator observes true cross-domain interactions, not isolated signals.</p>
+                    
+                    <p>2. Compound Modeling and Control</strong><br>
+                    Each operator combines classical control core (Model Reference Adaptive Control or equivalent physics-based controllers) ensuring stability and safety, backed by Lyapunov guarantees where applicable, with learned submodels—specialized neural components operating in parallel: efficiency and loss predictors, thermal dynamics estimators, degradation and anomaly detectors, and strategy modules that determine when and how learned corrections are applied. Crucially, learned components do not act unboundedly—they operate within envelopes defined by classical control and physical constraints.</p>
+                    
+                    <p>3. Hardware Adaptation Loop</strong><br>
+                    Improved models enable refined control actions. Refined control generates higher-quality data. The operator iteratively tightens its internal representation of the system. Examples include adaptive PWM switching strategies, dynamic current and torque limits based on learned thermal margins, and voltage and flux optimization under aging conditions. This creates a closed-loop improvement cycle where modeling and control co-evolve.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-label">VALIDATION.</div>
+                <div class="section-content">
+                    <p>The approach is validated on real hardware.</p>
+                    
+                    <p>
+                    Three-phase induction motors—chosen for their ubiquity, established analytical models, and meaningful electro-thermal-mechanical coupling.
+                    
+        5–8% efficiency improvement under variable loads, self-modeling accuracy within ±5% of measured system parameters, 15–20% faster transient response, and 15–25% extension of thermal endurance margins. Validation is conducted across 25+ operating points with full data transparency and repeatability.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-label">IMPACT.</div>
+                <div class="section-content">
+                    <p>Electric Adaptability is domain-agnostic by construction. Any system with measurable states, adjustable control inputs, and defined performance objectives can instantiate operators derived from this framework.
+                    Electric motors and drives, grid-scale inverters and power electronics, battery management systems, building HVAC systems, manufacturing equipment, and robotics and electromechanical automation are all examples of systems in which an operator can control and optimize.</p>
+                    
+                    <p>The paradigm shifts from design → deploy → degrade to design → deploy → adapt → improve. Systems equipped with operators do not merely preserve performance—they continuously refine it within safe, physics-grounded limits.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-label">OPEN SOURCE.</div>
+                <div class="section-content">
+                    <p>Electric Adaptability is developed transparently. Architectures, hardware specifications, trained models, and validation datasets will be released under open licenses in collaboration with research institutions and industry partners.</p>
+                    
+                    <p>The objective is not a proprietary controller, but a generalizable methodology for building adaptive, physics-aware operators that can be instantiated across electrically driven systems.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-label">PRELIMINARY DIAGRAMS.</div>
+                <div class="section-content">
+                    <p style="margin-bottom: 1.5rem;">Foundational, simple architectures for physics-grounded machine learning unification.</p>
+                    
+                    <!-- Diagram 1: Perception to Action -->
+                    <div style="margin-bottom: 0.75rem;">
+                        <div style="cursor: pointer; font-size: 0.6875rem; font-weight: 400; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;" onclick="let content = this.nextElementSibling; let arrow = this.querySelector('.arrow'); let isOpen = content.style.maxHeight && content.style.maxHeight !== '0px'; content.style.maxHeight = isOpen ? '0px' : content.scrollHeight + 'px'; arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';">
+                            <span class="arrow" style="display: inline-block; transition: transform 0.3s ease; transform: rotate(0deg);">→</span>
+                            <span>PERCEPTION → WORLD MODEL → ACTION</span>
+                        </div>
+                        <div style="max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+                            <div style="background: rgba(0, 0, 0, 0.02); padding: 1.5rem; font-family: 'Courier New', monospace; font-size: 0.6875rem; line-height: 1.4; overflow-x: auto;">
+<pre style="margin: 0;">
+  PHYSICAL SYSTEM                 COMPOUND AI                    CONTROL
+┌─────────────────┐          ┌──────────────────┐          ┌──────────────┐
+│ E: i,v (10kHz)  │──────────▶│ Physics Backbone │──────────▶│ PWM Adapt   │
+│ T: θ   (10Hz)   │          │  [MRAC Stable]   │          │ I_limit Dyn  │
+│ M: ω,τ (1kHz)   │          └────────┬─────────┘          │ V Profile    │
+└─────────────────┘                   │                    └──────────────┘
+         │                            │                           │
+         │                   ┌────────▼────────┐                 │
+         │                   │  Neural Network  │                 │
+         │                   │   Augmentation   │                 │
+         │                   └────────┬─────────┘                 │
+         │                            │                           │
+         └────────────────────────────┴───────────────────────────┘
+                        feedback: measure → learn → adapt
+</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diagram 2: Compound AI -->
+                    <div style="margin-bottom: 0.75rem;">
+                        <div style="cursor: pointer; font-size: 0.6875rem; font-weight: 400; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;" onclick="let content = this.nextElementSibling; let arrow = this.querySelector('.arrow'); let isOpen = content.style.maxHeight && content.style.maxHeight !== '0px'; content.style.maxHeight = isOpen ? '0px' : content.scrollHeight + 'px'; arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';">
+                            <span class="arrow" style="display: inline-block; transition: transform 0.3s ease; transform: rotate(0deg);">→</span>
+                            <span>COMPOUND AI ARCHITECTURE</span>
+                        </div>
+                        <div style="max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+                            <div style="background: rgba(0, 0, 0, 0.02); padding: 1.5rem; font-family: 'Courier New', monospace; font-size: 0.6875rem; line-height: 1.4; overflow-x: auto;">
+<pre style="margin: 0;">
+                    ┌─────────────────────────┐
+                    │   SHARED WORLD MODEL    │
+                    │  [Physical Embedding]   │
+                    └────────┬────────────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+    ┌────▼────┐         ┌────▼────┐        ┌────▼────┐
+    │Efficiency│         │ Thermal │        │Degrade  │
+    │Predictor │◄────────┤Dynamics │────────▶│Detector │
+    └────┬────┘         └────┬────┘        └────┬────┘
+         │                   │                   │
+         └───────────────────┼───────────────────┘
+                             │
+                        ┌────▼────┐
+                        │Strategy │
+                        │Optimizer│
+                        └─────────┘
+Networks share representations. Efficiency errors inform thermal.
+Degradation alerts modify strategy risk tolerance.
+</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diagram 3: Physics-ML Unification -->
+                    <div style="margin-bottom: 0.75rem;">
+                        <div style="cursor: pointer; font-size: 0.6875rem; font-weight: 400; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;" onclick="let content = this.nextElementSibling; let arrow = this.querySelector('.arrow'); let isOpen = content.style.maxHeight && content.style.maxHeight !== '0px'; content.style.maxHeight = isOpen ? '0px' : content.scrollHeight + 'px'; arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';">
+                            <span class="arrow" style="display: inline-block; transition: transform 0.3s ease; transform: rotate(0deg);">→</span>
+                            <span>PHYSICS ⟷ ML UNIFICATION</span>
+                        </div>
+                        <div style="max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+                            <div style="background: rgba(0, 0, 0, 0.02); padding: 1.5rem; font-family: 'Courier New', monospace; font-size: 0.6875rem; line-height: 1.4; overflow-x: auto;">
+<pre style="margin: 0;">
+Classical Domain              Learned Domain
+┌──────────────┐             ┌──────────────┐
+│ Lyapunov     │             │ Pattern      │
+│ Stability    │────────┬────│ Discovery    │
+│ Guarantees   │        │    │ (Neural Net) │
+└──────────────┘        │    └──────────────┘
+                        │
+                   ┌────▼────┐
+                   │ Unified │
+                   │  World  │
+                   │  Model  │
+                   └────┬────┘
+                        │
+              ┌─────────┴─────────┐
+         Physics           Empirical
+         Equations         Optimization
+         (R, L, ω)        (f_sw, I_lim)
+
+Bootstrap: Better models → Better control → Better data → Better models
+</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-label">WHITEPAPER.</div>
+                <div class="section-content">
+                    <p>An extremely barebones, preliminary whitepaper outlining the core motivation, architecture, and validation approach for electrically adaptive systems.</p>
+                    
+                    <p>
+                        <a href="EXTREMELY_BAREBONE_WHITEPAPER-_SEHAJ_RANDHIR_SINGH_ELECTRIC_ADAPTION__1_.pdf"
+                           style="color: #000000; text-decoration: underline;">
+                            WHITEPAPER
+                        </a>
+                    </p>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-label">CONTACT.</div>
+                <div class="section-content">
+                    <p style="font-size: 0.6875rem;">
+                        <strong>SEHAJ RANDHIR SINGH</strong> · <a href="mailto:sehajr.singhs@gmail.com" style="color: #000000; text-decoration: none;">sehajr.singhs@gmail.com</a>
+                    </p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        camera.position.z = 2;
+
+        const geometry = new THREE.PlaneGeometry(30, 30, 200, 200);
+        
+        const vertexShader = `
+            varying vec2 vUv;
+            varying float vElevation;
+            uniform float uTime;
+
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+            
+            float snoise(vec3 v) {
+              const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+              const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+              vec3 i = floor(v + dot(v, C.yyy));
+              vec3 x0 = v - i + dot(i, C.xxx);
+              vec3 g = step(x0.yzx, x0.xyz);
+              vec3 l = 1.0 - g;
+              vec3 i1 = min(g.xyz, l.zxy);
+              vec3 i2 = max(g.xyz, l.zxy);
+              vec3 x1 = x0 - i1 + C.xxx;
+              vec3 x2 = x0 - i2 + C.yyy;
+              vec3 x3 = x0 - D.yyy;
+              i = mod289(i);
+              vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+              float n_ = 0.142857142857;
+              vec3 ns = n_ * D.wyz - D.xzx;
+              vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+              vec4 x_ = floor(j * ns.z);
+              vec4 y_ = floor(j - 7.0 * x_);
+              vec4 x = x_ * ns.x + ns.yyyy;
+              vec4 y = y_ * ns.x + ns.yyyy;
+              vec4 h = 1.0 - abs(x) - abs(y);
+              vec4 b0 = vec4(x.xy, y.xy);
+              vec4 b1 = vec4(x.zw, y.zw);
+              vec4 s0 = floor(b0) * 2.0 + 1.0;
+              vec4 s1 = floor(b1) * 2.0 + 1.0;
+              vec4 sh = -step(h, vec4(0.0));
+              vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+              vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+              vec3 p0 = vec3(a0.xy, h.x);
+              vec3 p1 = vec3(a0.zw, h.y);
+              vec3 p2 = vec3(a1.xy, h.z);
+              vec3 p3 = vec3(a1.zw, h.w);
+              vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+              p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+              vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+              m = m * m;
+              return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+            }
+
+            void main() {
+              vUv = uv;
+              
+              float noise = snoise(vec3(position.x * 0.8, position.y * 0.8, uTime * 0.1));
+              float smallNoise = snoise(vec3(position.x * 2.5, position.y * 2.5, uTime * 0.15)) * 0.15;
+              
+              vElevation = noise + smallNoise;
+              
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const fragmentShader = `
+            uniform vec3 uColor;
+            varying float vElevation;
+
+            float dither(vec2 pos, float brightness) {
+                float bayer[16];
+                bayer[0] = 0.0/16.0;  bayer[1] = 8.0/16.0;  bayer[2] = 2.0/16.0;  bayer[3] = 10.0/16.0;
+                bayer[4] = 12.0/16.0; bayer[5] = 4.0/16.0;  bayer[6] = 14.0/16.0; bayer[7] = 6.0/16.0;
+                bayer[8] = 3.0/16.0;  bayer[9] = 11.0/16.0; bayer[10] = 1.0/16.0; bayer[11] = 9.0/16.0;
+                bayer[12] = 15.0/16.0; bayer[13] = 7.0/16.0; bayer[14] = 13.0/16.0; bayer[15] = 5.0/16.0;
+                
+                int x = int(mod(pos.x, 4.0));
+                int y = int(mod(pos.y, 4.0));
+                int index = x + y * 4;
+                
+                float limit = 0.0;
+                if(index == 0) limit = bayer[0];
+                if(index == 1) limit = bayer[1];
+                if(index == 2) limit = bayer[2];
+                if(index == 3) limit = bayer[3];
+                if(index == 4) limit = bayer[4];
+                if(index == 5) limit = bayer[5];
+                if(index == 6) limit = bayer[6];
+                if(index == 7) limit = bayer[7];
+                if(index == 8) limit = bayer[8];
+                if(index == 9) limit = bayer[9];
+                if(index == 10) limit = bayer[10];
+                if(index == 11) limit = bayer[11];
+                if(index == 12) limit = bayer[12];
+                if(index == 13) limit = bayer[13];
+                if(index == 14) limit = bayer[14];
+                if(index == 15) limit = bayer[15];
+
+                return step(limit, brightness);
+            }
+
+            void main() {
+                float brightness = smoothstep(-1.0, 1.0, vElevation);
+                brightness = 0.6 + brightness * 0.5;
+
+                float d = dither(gl_FragCoord.xy, brightness);
+                
+                vec3 color = uColor;
+                float alpha = (1.0 - d) * 0.30;
+
+                gl_FragColor = vec4(color, alpha);
+            }
+        `;
+
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uColor: { value: new THREE.Color(0x111111) }
+            },
+            vertexShader: vertexShader,
+            fragmentShader: fragmentShader,
+            transparent: true
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.rotation.x = 0;
+        scene.add(mesh);
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            material.uniforms.uTime.value = clock.getElapsedTime();
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
